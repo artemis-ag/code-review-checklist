@@ -1,4 +1,4 @@
-const marked = require('marked');
+const { listCompleted, listsFromMarkdown } = require('./lib/markdown-checks')
 
 module.exports = (app) => {
   // watch for pull requests & their changes
@@ -7,16 +7,7 @@ module.exports = (app) => {
 
     // lookup the pr body/description
     const pr = context.payload.pull_request;
-    const body = pr.body;
-
-    const parsedMarkdown = marked.lexer(body, { gfm: true });
-    const lists = parsedMarkdown.filter(token => {
-      // any bullet lists with checklist items underneath
-      if (token.type === 'list') {
-        const optionItems = token.items[1]
-        return optionItems && optionItems.type === 'list'
-      }
-    });
+    const lists = listsFromMarkdown(pr.body);
 
     // needs at least 1 checklist
     const hasLists = lists.length > 0
@@ -39,7 +30,7 @@ module.exports = (app) => {
     if (!hasLists) { return }
 
     // check if all checklists are completed
-    const guideComplete = lists.every(list => token.items[1].items.some(item => item.checked === true));
+    const guideComplete = lists.every(listCompleted);
 
     let guideCheck = {
       name: 'pr-review-guide-completed',
