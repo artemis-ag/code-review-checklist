@@ -3,16 +3,21 @@ const { listCompleted, listsFromMarkdown } = require('./lib/markdown-checks')
 module.exports = (app) => {
   // watch for pull requests & their changes
   app.on(['pull_request.opened', 'pull_request.edited', 'pull_request.synchronize'], async context => {
-    const startTime = (new Date).toISOString();
+    const params = context.issue({ body: 'Hello World!' })
+
+    // Post a comment on the issue
+    context.github.issues.createComment(params)
+
+    const startTime = (new Date()).toISOString()
 
     // lookup the pr body/description
-    const pr = context.payload.pull_request;
-    const lists = listsFromMarkdown(pr.body);
+    const pr = context.payload.pull_request
+    const lists = listsFromMarkdown(pr.body)
 
     // needs at least 1 checklist
     const hasLists = lists.length > 0
 
-    let hasListCheck = {
+    const hasListCheck = {
       name: 'pr-review-guide-created',
       head_sha: pr.head.sha,
       started_at: startTime,
@@ -23,16 +28,16 @@ module.exports = (app) => {
         summary: 'PRs should have a guide for reviewers',
         text: 'Please make a thoughtful review guide for your reviewer'
       }
-    };
+    }
 
     context.github.checks.create(context.repo(hasListCheck))
 
     if (!hasLists) { return }
 
     // check if all checklists are completed
-    const guideComplete = lists.every(listCompleted);
+    const guideComplete = lists.every(listCompleted)
 
-    let guideCheck = {
+    const guideCheck = {
       name: 'pr-review-guide-completed',
       head_sha: pr.head.sha,
       started_at: startTime,
@@ -42,18 +47,18 @@ module.exports = (app) => {
         summary: 'The PR Guide still needs to be completed',
         text: 'Please check off the relevant items in the PR Guide'
       }
-    };
+    }
 
     // all finished?
     if (guideComplete) {
-      check.status = 'completed';
-      check.conclusion = 'success';
-      check.completed_at = (new Date).toISOString();
-      check.output.title = 'PR Review complete';
-      check.output.summary = 'The PR Guide has been completed';
+      guideCheck.status = 'completed'
+      guideCheck.conclusion = 'success'
+      guideCheck.completed_at = (new Date()).toISOString()
+      guideCheck.output.title = 'PR Review complete'
+      guideCheck.output.summary = 'The PR Guide has been completed'
     };
 
     // send check back to GitHub
-    return context.github.checks.create(context.repo(guideCheck));
-  });
-};
+    return context.github.checks.create(context.repo(guideCheck))
+  })
+}
