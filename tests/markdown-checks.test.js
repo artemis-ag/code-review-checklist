@@ -1,4 +1,4 @@
-const marked = require('marked');
+require('marked')
 
 const { listCompleted, listsFromMarkdown } = require('./../lib/markdown-checks')
 
