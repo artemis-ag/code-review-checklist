@@ -3,11 +3,6 @@ const { listCompleted, listsFromMarkdown } = require('./lib/markdown-checks')
 module.exports = (app) => {
   // watch for pull requests & their changes
   app.on(['pull_request.opened', 'pull_request.edited', 'pull_request.synchronize'], async context => {
-    const params = context.issue({ body: 'Hello World!' })
-
-    // Post a comment on the issue
-    context.github.issues.createComment(params)
-
     const startTime = (new Date()).toISOString()
 
     // lookup the pr body/description
