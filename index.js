@@ -25,7 +25,7 @@ module.exports = (app) => {
       }
     }
 
-    context.github.checks.create(context.repo(hasListCheck))
+    context.octokit.checks.create(context.repo(hasListCheck))
 
     if (!hasLists) { return }
 
@@ -54,6 +54,6 @@ module.exports = (app) => {
     };
 
     // send check back to GitHub
-    return context.github.checks.create(context.repo(guideCheck))
+    return context.octokit.checks.create(context.repo(guideCheck))
   })
 }
